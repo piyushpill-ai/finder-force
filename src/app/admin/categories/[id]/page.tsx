@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CategoryActions } from "@/components/admin/CategoryActions";
 import { MetricWeights } from "@/components/admin/MetricWeights";
 import { CopyButton } from "@/components/admin/CopyButton";
+import { CategoryHeader, MetricsList } from "@/components/admin/CategoryDetailClient";
 
 export const dynamic = "force-dynamic";
 
@@ -48,10 +49,7 @@ export default async function CategoryDetailPage({
           >
             ← Back to Categories
           </Link>
-          <h1 className="font-display text-3xl font-bold mb-2">{category.name}</h1>
-          {category.description && (
-            <p className="text-white/60">{category.description}</p>
-          )}
+          <CategoryHeader category={category} />
         </div>
         <CategoryActions category={category} />
       </div>
@@ -73,6 +71,12 @@ export default async function CategoryDetailPage({
               }`}
             >
               {category.status}
+            </span>
+            <span className="text-sm text-white/40">
+              {category.status === "DRAFT" && "Ready to launch"}
+              {category.status === "LAUNCHED" && "Accepting entries"}
+              {category.status === "JUDGING" && "Judges are scoring"}
+              {category.status === "COMPLETED" && "Winners calculated"}
             </span>
           </div>
         </div>
@@ -96,33 +100,7 @@ export default async function CategoryDetailPage({
       {/* Metrics */}
       <div className="mb-8">
         <h2 className="font-display text-xl font-semibold mb-4">Metrics</h2>
-        <div className="grid gap-3">
-          {category.metrics.map((metric, index) => (
-            <div
-              key={metric.id}
-              className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl"
-            >
-              <div className="flex items-center gap-4">
-                <span className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center text-sm font-medium">
-                  {index + 1}
-                </span>
-                <span className="font-medium">{metric.name}</span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    metric.type === "NUMERIC"
-                      ? "bg-midnight-100 text-midnight-700 border border-midnight-200"
-                      : "bg-finder-100 text-finder-700 border border-finder-200"
-                  }`}
-                >
-                  {metric.type === "NUMERIC" ? "🔢 Numeric" : "📝 Text"}
-                </span>
-              </div>
-              <div className="text-white/60 text-sm">
-                Weight: {metric.weight}x
-              </div>
-            </div>
-          ))}
-        </div>
+        <MetricsList category={category} />
       </div>
 
       {/* Metric Weights - Only show for judging/completed */}
@@ -250,4 +228,3 @@ export default async function CategoryDetailPage({
     </div>
   );
 }
-

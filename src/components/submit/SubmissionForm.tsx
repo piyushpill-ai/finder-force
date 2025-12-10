@@ -19,6 +19,12 @@ interface SubmissionFormProps {
   category: Category;
 }
 
+const WORD_LIMIT = 300;
+
+function countWords(text: string): number {
+  return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+}
+
 export function SubmissionForm({ category }: SubmissionFormProps) {
   const [companyName, setCompanyName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -29,6 +35,18 @@ export function SubmissionForm({ category }: SubmissionFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate word limits
+    for (const metric of category.metrics) {
+      if (metric.type === "TEXT") {
+        const wordCount = countWords(metricValues[metric.id] || "");
+        if (wordCount > WORD_LIMIT) {
+          alert(`${metric.name} exceeds the ${WORD_LIMIT} word limit. Please shorten your response.`);
+          return;
+        }
+      }
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -118,60 +136,82 @@ export function SubmissionForm({ category }: SubmissionFormProps) {
       <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
         <h2 className="font-semibold text-lg mb-4">Entry Details</h2>
         <div className="space-y-6">
-          {category.metrics.map((metric) => (
-            <div key={metric.id}>
-              <label className="flex items-center gap-2 text-sm font-medium text-white/70 mb-2">
-                {metric.name} *
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    metric.type === "NUMERIC"
-                      ? "bg-midnight-100 text-midnight-700"
-                      : "bg-finder-100 text-finder-700"
-                  }`}
-                >
-                  {metric.type === "NUMERIC" ? "🔢 Number" : "📝 Text"}
-                </span>
-              </label>
-              {metric.description && (
-                <p className="text-sm text-white/40 mb-2">{metric.description}</p>
-              )}
-              {metric.type === "NUMERIC" ? (
-                <input
-                  type="number"
-                  step="any"
-                  value={metricValues[metric.id] || ""}
-                  onChange={(e) =>
-                    setMetricValues({ ...metricValues, [metric.id]: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-finder-500/50 focus:ring-2 focus:ring-finder-500/20 transition-all"
-                  placeholder="Enter a number"
-                />
-              ) : (
-                <textarea
-                  value={metricValues[metric.id] || ""}
-                  onChange={(e) =>
-                    setMetricValues({ ...metricValues, [metric.id]: e.target.value })
-                  }
-                  required
-                  rows={4}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-finder-500/50 focus:ring-2 focus:ring-finder-500/20 transition-all resize-none"
-                  placeholder="Describe in detail..."
-                />
-              )}
-            </div>
-          ))}
+          {category.metrics.map((metric) => {
+            const wordCount = metric.type === "TEXT" ? countWords(metricValues[metric.id] || "") : 0;
+            const isOverLimit = wordCount > WORD_LIMIT;
+            
+            return (
+              <div key={metric.id}>
+                <label className="flex items-center gap-2 text-sm font-medium text-white/70 mb-2">
+                  {metric.name} *
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      metric.type === "NUMERIC"
+                        ? "bg-midnight-100 text-midnight-700"
+                        : "bg-finder-100 text-finder-700"
+                    }`}
+                  >
+                    {metric.type === "NUMERIC" ? "🔢 Number" : "📝 Text"}
+                  </span>
+                </label>
+                {metric.description && (
+                  <p className="text-sm text-white/40 mb-2">{metric.description}</p>
+                )}
+                {metric.type === "NUMERIC" ? (
+                  <input
+                    type="number"
+                    step="any"
+                    value={metricValues[metric.id] || ""}
+                    onChange={(e) =>
+                      setMetricValues({ ...metricValues, [metric.id]: e.target.value })
+                    }
+                    required
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-finder-500/50 focus:ring-2 focus:ring-finder-500/20 transition-all"
+                    placeholder="Enter a number"
+                  />
+                ) : (
+                  <div>
+                    <textarea
+                      value={metricValues[metric.id] || ""}
+                      onChange={(e) =>
+                        setMetricValues({ ...metricValues, [metric.id]: e.target.value })
+                      }
+                      required
+                      rows={4}
+                      className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 transition-all resize-none ${
+                        isOverLimit 
+                          ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20" 
+                          : "border-white/10 focus:border-finder-500/50 focus:ring-finder-500/20"
+                      }`}
+                      placeholder="Describe in detail..."
+                    />
+                    <div className={`mt-2 text-sm flex justify-between ${
+                      isOverLimit ? "text-red-400" : "text-white/40"
+                    }`}>
+                      <span>
+                        {isOverLimit && "⚠️ Exceeds word limit. Please shorten your response."}
+                      </span>
+                      <span>
+                        {wordCount} / {WORD_LIMIT} words
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="w-full px-8 py-4 bg-gradient-to-r from-finder-500 to-finder-600 hover:from-finder-600 hover:to-finder-700 disabled:from-white/10 disabled:to-white/10 text-white rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-finder-500/30"
+        disabled={isSubmitting || category.metrics.some(m => 
+          m.type === "TEXT" && countWords(metricValues[m.id] || "") > WORD_LIMIT
+        )}
+        className="w-full px-8 py-4 bg-gradient-to-r from-finder-500 to-finder-600 hover:from-finder-600 hover:to-finder-700 disabled:from-white/10 disabled:to-white/10 disabled:cursor-not-allowed text-white rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-finder-500/30"
       >
         {isSubmitting ? "Submitting..." : "Submit Entry"}
       </button>
     </form>
   );
 }
-
