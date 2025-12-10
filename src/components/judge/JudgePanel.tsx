@@ -67,7 +67,7 @@ export function JudgePanel({ category, judgeId, existingScores }: JudgePanelProp
           value,
         }),
       });
-      setSavedKeys(new Set([...savedKeys, key]));
+      setSavedKeys(new Set(Array.from(savedKeys).concat(key)));
     } finally {
       setSaving(null);
     }
