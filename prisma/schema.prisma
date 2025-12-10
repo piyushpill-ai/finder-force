@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  role          String    @default("ADMIN")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  judgeAssignments JudgeAssignment[]
+  scores           Score[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("DRAFT")
+  shareToken  String   @unique @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  metrics     Metric[]
+  submissions Submission[]
+  judgeAssignments JudgeAssignment[]
+}
+
+model Metric {
+  id          String  @id @default(cuid())
+  name        String
+  type        String
+  description String?
+  weight      Float   @default(1.0)
+  order       Int     @default(0)
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  metricValues MetricValue[]
+  scores       Score[]
+}
+
+model Submission {
+  id          String   @id @default(cuid())
+  companyName String
+  contactEmail String
+  contactName  String?
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  totalScore  Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  metricValues MetricValue[]
+  scores       Score[]
+}
+
+model MetricValue {
+  id           String     @id @default(cuid())
+  textValue    String?
+  numericValue Float?
+  metricId     String
+  metric       Metric     @relation(fields: [metricId], references: [id], onDelete: Cascade)
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  
+  @@unique([metricId, submissionId])
+}
+
+model JudgeAssignment {
+  id         String   @id @default(cuid())
+  judgeId    String
+  judge      User     @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  inviteToken String  @unique @default(cuid())
+  invitedAt  DateTime @default(now())
+  
+  @@unique([judgeId, categoryId])
+}
+
+model Score {
+  id           String     @id @default(cuid())
+  value        Int
+  judgeId      String
+  judge        User       @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  metricId     String
+  metric       Metric     @relation(fields: [metricId], references: [id], onDelete: Cascade)
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  @@unique([judgeId, metricId, submissionId])
+}

@@ -1,0 +1,65 @@
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=satoshi@400,500,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-cabinet: 'Cabinet Grotesk', system-ui, sans-serif;
+  --font-satoshi: 'Satoshi', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-satoshi);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-cabinet);
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-finder-500 via-finder-400 to-finder-600;
+  }
+  
+  .bg-mesh {
+    background-image: 
+      radial-gradient(at 40% 20%, rgba(232, 116, 37, 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(72, 111, 174, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(232, 116, 37, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, rgba(72, 111, 174, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(232, 116, 37, 0.1) 0px, transparent 50%);
+  }
+  
+  .lozenge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-all duration-200;
+  }
+  
+  .lozenge-numeric {
+    @apply bg-midnight-100 text-midnight-700 border border-midnight-200;
+  }
+  
+  .lozenge-text {
+    @apply bg-finder-100 text-finder-700 border border-finder-200;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
